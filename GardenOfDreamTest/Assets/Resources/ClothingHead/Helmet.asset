@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8def3e8f50bbbb446b18cfa568525313, type: 3}
   m_Name: Helmet
   m_EditorClassIdentifier: 
+  <Name>k__BackingField: "\u0428\u043B\u0435\u043C"
   <Image>k__BackingField: {fileID: 21300000, guid: f238d77bfabcc4347b2bebc7d57b2ebb, type: 3}
   <MaxCount>k__BackingField: 1
   <Weight>k__BackingField: 1

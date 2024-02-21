@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8def3e8f50bbbb446b18cfa568525313, type: 3}
   m_Name: Cap
   m_EditorClassIdentifier: 
+  <Name>k__BackingField: "\u041A\u0435\u043F\u043A\u0430"
   <Image>k__BackingField: {fileID: 21300000, guid: 1556e8dfa6c9f1a4aaf9d18a77e69c08, type: 3}
   <MaxCount>k__BackingField: 1
   <Weight>k__BackingField: 0.1

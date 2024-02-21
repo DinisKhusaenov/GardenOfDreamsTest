@@ -1,12 +1,25 @@
+using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using Zenject;
 
-public class Cell : MonoBehaviour
+public class Cell : MonoBehaviour, IPointerClickHandler
 {
+    public event Action<InventoryItemView> Click;
+
     private InventoryItemView _currentItem;
     private bool _isOccupied;
+    private PopUp _popUp;
 
     public bool IsOccupied => _isOccupied;
+
     public InventoryItemView CurrentItem => _currentItem;
+
+    [Inject]
+    private void Construct(PopUp popUp)
+    {
+        _popUp = popUp;
+    }
 
     private void Awake()
     {
@@ -35,5 +48,14 @@ public class Cell : MonoBehaviour
         cell.TryAddToCell(_currentItem);
         Clear();
         TryAddToCell(view);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (_isOccupied)
+        {
+            _popUp.Show();
+            Click?.Invoke(_currentItem);
+        }
     }
 }

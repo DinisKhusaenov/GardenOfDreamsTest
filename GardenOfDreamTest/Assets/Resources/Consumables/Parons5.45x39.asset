@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a03a6a16bfb3a394781d3f3715a5a338, type: 3}
   m_Name: Parons5.45x39
   m_EditorClassIdentifier: 
+  <Name>k__BackingField: 5.45x39
   <Image>k__BackingField: {fileID: 21300000, guid: 3d189109b5132ee41af5d207007722bf, type: 3}
   <MaxCount>k__BackingField: 100
   <Weight>k__BackingField: 0.03

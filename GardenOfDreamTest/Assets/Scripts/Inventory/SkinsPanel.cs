@@ -1,19 +1,27 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 public class SkinsPanel : MonoBehaviour
 {
     public event Action<InventoryItemView> ItemViewClicked;
     public event Action<InventoryItemView> ItemViewDestroyed;
 
-    private List<InventoryItemView> _inventoryItems = new List<InventoryItemView>();
-
     [SerializeField] private Transform _draggingParent;
-    [SerializeField] private InventoryItemViewFactory _inventoryItemViewFactory;
-    [SerializeField] private List<Cell> _cells;
 
+    private InventoryItemViewFactory _inventoryItemViewFactory;
+    private List<Cell> _cells;
+
+    private List<InventoryItemView> _inventoryItems = new List<InventoryItemView>();
     private Cell _currentCell;
+
+    [Inject]
+    private void Construct(InventoryItemViewFactory factory, List<Cell> cells)
+    {
+        _inventoryItemViewFactory = factory;
+        _cells = cells;
+    }
 
     public void Show(IEnumerable<InventoryItem> items, List<int> itemCount)
     {

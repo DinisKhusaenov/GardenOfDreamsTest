@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Zenject;
 
 public class Inventory : MonoBehaviour
 {
-    [SerializeField] private InventoryContent _inventoryContent;
-    [SerializeField] private InitialInventoryData _initialInventoryData;
-
     [SerializeField] private SkinsPanel _skinsPanel;
+
+    private InventoryContent _inventoryContent;
+    private InitialInventoryData _initialInventoryData;
 
     private List<int> _weaponSkinCount;
     private List<int> _armorSkinCount;
@@ -23,11 +24,15 @@ public class Inventory : MonoBehaviour
 
     private SkinRemover _skinRemover;
 
-    public void Initialize(IDataProvider dataProvider, IPersistentData persistentData, SkinRemover skinRemover)
+    [Inject]
+    private void Construct(IDataProvider dataProvider, IPersistentData persistentData, SkinRemover skinRemover, 
+        InventoryContent inventoryContent, InitialInventoryData initialInventoryData)
     {
         _dataProvider = dataProvider;
         _persistentData = persistentData;
         _skinRemover = skinRemover;
+        _inventoryContent = inventoryContent;
+        _initialInventoryData = initialInventoryData;
 
         _weaponSkinCount = new List<int>();
         _armorSkinCount = new List<int>();
