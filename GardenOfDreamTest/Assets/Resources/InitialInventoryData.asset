@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 308e86da3a05b7c4c8222d6cc83d919f, type: 3}
+  m_Name: InitialInventoryData
+  m_EditorClassIdentifier: 
+  _clothesHeadSkinItems:
+  - {fileID: 11400000, guid: 899baf4a2d0ff06419d04c4e82bc680d, type: 2}
+  - {fileID: 11400000, guid: 60619bcb061fbbb4590b0ef74cdc4239, type: 2}
+  _clothesTorsSkinItems:
+  - {fileID: 11400000, guid: 9b17e9eb00c486d46bc9cdf5cdab300a, type: 2}
+  - {fileID: 11400000, guid: a11f007b1a9e8aa47abfe960b1a654c0, type: 2}
+  _consumableSkinItems:
+  - {fileID: 11400000, guid: edb71bc7f3a2cee4babd923a03fe3d37, type: 2}
+  - {fileID: 11400000, guid: c2e0317ac1f11b9499e53ffd8174b97c, type: 2}
+  - {fileID: 11400000, guid: 132a6f8f78c0ad84b9d53cb7438f4716, type: 2}
+  _clothesHeadSkinItemsCount: 0100000001000000
+  _clothesTorsSkinItemsCount: 0100000001000000
+  _consumableSkinItemsCount: 060000006400000032000000
