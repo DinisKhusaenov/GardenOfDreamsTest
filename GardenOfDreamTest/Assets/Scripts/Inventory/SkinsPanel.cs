@@ -1,26 +1,27 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Zenject;
 
 public class SkinsPanel : MonoBehaviour
 {
-    public event Action<InventoryItemView> ItemViewClicked;
     public event Action<InventoryItemView> ItemViewDestroyed;
 
     [SerializeField] private Transform _draggingParent;
 
     private InventoryItemViewFactory _inventoryItemViewFactory;
-    private List<Cell> _cells;
+    private List<Cell> _allCells;
+    private List<Cell> _emptyCells;
 
-    private List<InventoryItemView> _inventoryItems = new List<InventoryItemView>();
     private Cell _currentCell;
 
     [Inject]
     private void Construct(InventoryItemViewFactory factory, List<Cell> cells)
     {
         _inventoryItemViewFactory = factory;
-        _cells = cells;
+        _allCells = cells;
+        _emptyCells = new List<Cell>(_allCells);
     }
 
     public void Show(IEnumerable<InventoryItem> items, List<int> itemCount)
@@ -29,47 +30,69 @@ public class SkinsPanel : MonoBehaviour
 
         foreach (var item in items)
         {
-            foreach (var cell in _cells)
+            var cell = GetEmptyCell();
+            InventoryItemView spawnedItem = null;
+
+            if (cell == null) break;
+
+            int counter = 0;
+
+            for (int k = item.MaxCount; k < itemCount[i]; k += item.MaxCount)
             {
-                if (!cell.IsOccupied)
-                {
-                    InventoryItemView spawnedItem = _inventoryItemViewFactory.Get(item, cell.transform, _draggingParent);
-                    cell.TryAddToCell(spawnedItem);
+                spawnedItem = _inventoryItemViewFactory.Get(item, cell.transform, _draggingParent);
+                _emptyCells.Remove(cell);
+                cell.TryAddToCell(spawnedItem);
 
-                    spawnedItem.SetCount(itemCount[i]);
+                spawnedItem.SetCount(item.MaxCount);
+                SubscribeToTheEvent(spawnedItem);
+                counter++;
 
-                    spawnedItem.Click += OnItemViewClick;
-                    spawnedItem.Destroyed += OnItemViewDestroyed;
-                    spawnedItem.DragBeginned += OnDragBeginned;
-                    spawnedItem.DragEnded += OnDragEnded;
+                cell = GetEmptyCell();
+                if (cell == null) break;
+            }
 
-                    _inventoryItems.Add(spawnedItem);
-                    break;
-                }
+            if (counter * item.MaxCount < itemCount[i])
+            {
+                cell = GetEmptyCell();
+                if (cell == null) break;
+
+                spawnedItem = _inventoryItemViewFactory.Get(item, cell.transform, _draggingParent);
+                _emptyCells.Remove(cell);
+                cell.TryAddToCell(spawnedItem);
+                SubscribeToTheEvent(spawnedItem);
+
+                spawnedItem.SetCount(itemCount[i] - (counter * item.MaxCount));
             }
             i++;
         }
     }
 
-    private void OnItemViewClick(InventoryItemView inventoryItemView)
+    private Cell GetEmptyCell()
     {
-        ItemViewClicked?.Invoke(inventoryItemView);
+        return _emptyCells.FirstOrDefault<Cell>();
+    }
+
+    private void SubscribeToTheEvent(InventoryItemView spawnedItem)
+    {
+        spawnedItem.Deleted += OnItemViewDestroyed;
+        spawnedItem.DragBeginned += OnDragBeginned;
+        spawnedItem.DragEnded += OnDragEnded;
     }
 
     private void OnItemViewDestroyed(InventoryItemView inventoryItemView)
     {
-        _inventoryItems.Remove(inventoryItemView);
         ItemViewDestroyed?.Invoke(inventoryItemView);
     }
 
     private void OnDragBeginned(InventoryItemView view)
     {
-        foreach (var cell in _cells)
+        foreach (var cell in _allCells)
         {
             if (cell.CurrentItem == view)
             {
                 cell.Clear();
                 _currentCell = cell;
+                _emptyCells.Add(_currentCell);
             }
         }
     }
@@ -82,7 +105,7 @@ public class SkinsPanel : MonoBehaviour
         Cell closestEmptyCell = null;
         Cell closestOccupiedCell = null;
 
-        foreach (var cell in _cells)
+        foreach (var cell in _allCells)
         {
             var distance = Vector3.Distance(view.transform.position, cell.transform.position);
             if (distance < minEpmtyDistance && !cell.IsOccupied)

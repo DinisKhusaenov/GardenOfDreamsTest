@@ -5,7 +5,7 @@ using Zenject;
 
 public class Cell : MonoBehaviour, IPointerClickHandler
 {
-    public event Action<InventoryItemView> Click;
+    public event Action<InventoryItemView, Cell> Click;
 
     private InventoryItemView _currentItem;
     private bool _isOccupied;
@@ -13,16 +13,15 @@ public class Cell : MonoBehaviour, IPointerClickHandler
 
     public bool IsOccupied => _isOccupied;
 
+    public bool IsCanClick { get; set; }
+
     public InventoryItemView CurrentItem => _currentItem;
 
     [Inject]
     private void Construct(PopUp popUp)
     {
         _popUp = popUp;
-    }
-
-    private void Awake()
-    {
+        IsCanClick = true;
         _isOccupied = false;
     }
 
@@ -52,10 +51,10 @@ public class Cell : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (_isOccupied)
+        if (_isOccupied && IsCanClick)
         {
             _popUp.Show();
-            Click?.Invoke(_currentItem);
+            Click?.Invoke(_currentItem, this);
         }
     }
 }

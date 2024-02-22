@@ -7,20 +7,25 @@ public class PlayerData
     private Dictionary<ConsumableTypes, int> _inventoryConsumableSkins;
     private Dictionary<ClothesTorsType, int> _inventoryClothesTorsSkins;
 
+    public bool IsStartDataLoaded { get; set; }
+
     public PlayerData()
     {
         _inventoryClothesHeadSkins = new Dictionary<ClothesHeadTypes, int>();
         _inventoryConsumableSkins = new Dictionary<ConsumableTypes, int>();
         _inventoryClothesTorsSkins = new Dictionary<ClothesTorsType, int>();
+
+        IsStartDataLoaded = false;
     }
 
     [JsonConstructor]
     public PlayerData(Dictionary<ClothesHeadTypes, int> inventoryClothesHeadSkins, Dictionary<ConsumableTypes, int> inventoryConsumableSkins, 
-        Dictionary<ClothesTorsType, int> inventoryClothesTorsSkins)
+        Dictionary<ClothesTorsType, int> inventoryClothesTorsSkins, bool isStartDataLoaded)
     {
         _inventoryClothesHeadSkins = new Dictionary<ClothesHeadTypes, int>(inventoryClothesHeadSkins);
         _inventoryConsumableSkins = new Dictionary<ConsumableTypes, int>(inventoryConsumableSkins);
         _inventoryClothesTorsSkins = new Dictionary<ClothesTorsType, int>(inventoryClothesTorsSkins);
+        IsStartDataLoaded = isStartDataLoaded;
     }
 
     public IReadOnlyDictionary<ClothesHeadTypes, int> InventoryClothesHeadSkins => _inventoryClothesHeadSkins;
@@ -68,27 +73,36 @@ public class PlayerData
         }
     }
 
-    public void RemoveClothesHeadSkin(ClothesHeadTypes clothesHeadSkin)
+    public void RemoveClothesHeadSkin(ClothesHeadTypes clothesHeadSkin, int count)
     {
         if (_inventoryClothesHeadSkins.ContainsKey(clothesHeadSkin))
         {
-            _inventoryClothesHeadSkins.Remove(clothesHeadSkin);
+            _inventoryClothesHeadSkins[clothesHeadSkin] -= count;
+
+            if (_inventoryClothesHeadSkins[clothesHeadSkin] <= 0)
+                _inventoryClothesHeadSkins.Remove(clothesHeadSkin);
         }
     }
 
-    public void RemoveConsumableSkin(ConsumableTypes consumableSkin)
+    public void RemoveConsumableSkin(ConsumableTypes consumableSkin, int count)
     {
         if (_inventoryConsumableSkins.ContainsKey(consumableSkin))
         {
-            _inventoryConsumableSkins.Remove(consumableSkin);
+            _inventoryConsumableSkins[consumableSkin] -= count;
+
+            if (_inventoryConsumableSkins[consumableSkin] <= 0)
+                _inventoryConsumableSkins.Remove(consumableSkin);
         }
     }
 
-    public void RemoveClothesTorsSkin(ClothesTorsType clothesTorsSkin)
+    public void RemoveClothesTorsSkin(ClothesTorsType clothesTorsSkin, int count)
     {
         if (_inventoryClothesTorsSkins.ContainsKey(clothesTorsSkin))
         {
-            _inventoryClothesTorsSkins.Remove(clothesTorsSkin);
+            _inventoryClothesTorsSkins[clothesTorsSkin] -= count;
+
+            if (_inventoryClothesTorsSkins[clothesTorsSkin] <= 0)
+                _inventoryClothesTorsSkins.Remove(clothesTorsSkin);
         }
     }
 }

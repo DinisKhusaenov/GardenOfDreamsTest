@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,16 +7,16 @@ public class Inventory : MonoBehaviour
 {
     [SerializeField] private SkinsPanel _skinsPanel;
 
-    private InventoryContent _inventoryContent;
     private InitialInventoryData _initialInventoryData;
+    private InventoryContent _inventoryContent;
 
-    private List<int> _weaponSkinCount;
-    private List<int> _armorSkinCount;
-    private List<int> _ammoSkinCount;
+    private List<int> _clothesTorsSkinCount;
+    private List<int> _consumableSkinCount;
+    private List<int> _clothesHeadSkinCount;
 
-    private List<ClothesTorsSkinItem> _weaponSkinItems;
-    private List<ConsumableSkinItem> _ammoSkinItems;
-    private List<ClothesHeadSkinItem> _armorSkinItems;
+    private List<ClothesTorsSkinItem> _clothesTorsSkinItems;
+    private List<ConsumableSkinItem> _consumableSkinItems;
+    private List<ClothesHeadSkinItem> _clothesHeadSkinItems;
 
     private IDataProvider _dataProvider;
     private IPersistentData _persistentData;
@@ -26,25 +25,36 @@ public class Inventory : MonoBehaviour
 
     [Inject]
     private void Construct(IDataProvider dataProvider, IPersistentData persistentData, SkinRemover skinRemover, 
-        InventoryContent inventoryContent, InitialInventoryData initialInventoryData)
+        InitialInventoryData initialInventoryData, InventoryContent inventoryContent)
     {
         _dataProvider = dataProvider;
         _persistentData = persistentData;
         _skinRemover = skinRemover;
-        _inventoryContent = inventoryContent;
         _initialInventoryData = initialInventoryData;
+        _inventoryContent = inventoryContent;
 
-        _weaponSkinCount = new List<int>();
-        _armorSkinCount = new List<int>();
-        _ammoSkinCount = new List<int>();
+        _clothesTorsSkinCount = new List<int>();
+        _consumableSkinCount = new List<int>();
+        _clothesHeadSkinCount = new List<int>();
 
-        _weaponSkinItems = new List<ClothesTorsSkinItem>();
-        _armorSkinItems = new List<ClothesHeadSkinItem>();
-        _ammoSkinItems = new List<ConsumableSkinItem>();
+        _clothesTorsSkinItems = new List<ClothesTorsSkinItem>();
+        _clothesHeadSkinItems = new List<ClothesHeadSkinItem>();
+        _consumableSkinItems = new List<ConsumableSkinItem>();
 
-        _skinsPanel.Show(_initialInventoryData.ClosthesHeadSkinItems, _initialInventoryData.ClosthesHeadSkinItemsCount.ToList());
-        _skinsPanel.Show(_initialInventoryData.ClothesTorsSkinItems, _initialInventoryData.ClothesTorsSkinItemsCount.ToList());
-        _skinsPanel.Show(_initialInventoryData.ConsumableSkinItems, _initialInventoryData.ConsumableSkinItemsCount.ToList());
+        if (!_persistentData.PlayerData.IsStartDataLoaded)
+        {
+            LoadStartData();
+        }
+        else
+        {
+            LoadClothesHeadData();
+            LoadClothesTorsData();
+            LoadConsumableData();
+
+            _skinsPanel.Show(_clothesTorsSkinItems, _clothesTorsSkinCount);
+            _skinsPanel.Show(_consumableSkinItems, _consumableSkinCount);
+            _skinsPanel.Show(_clothesHeadSkinItems, _clothesHeadSkinCount);
+        }
     }
 
     private void OnEnable()
@@ -57,61 +67,69 @@ public class Inventory : MonoBehaviour
         _skinsPanel.ItemViewDestroyed -= OnItemViewDestroyed;
     }
 
+    private void LoadStartData()
+    {
+        _skinsPanel.Show(_initialInventoryData.ClosthesHeadSkinItems, _initialInventoryData.ClosthesHeadSkinItemsCount.ToList());
+        _skinsPanel.Show(_initialInventoryData.ClothesTorsSkinItems, _initialInventoryData.ClothesTorsSkinItemsCount.ToList());
+        _skinsPanel.Show(_initialInventoryData.ConsumableSkinItems, _initialInventoryData.ConsumableSkinItemsCount.ToList());
+
+        foreach (var item in _initialInventoryData.ConsumableSkinItems)
+            _persistentData.PlayerData.AddConsumableSkin(item.SkinType);
+
+        foreach (var item in _initialInventoryData.ClothesTorsSkinItems)
+            _persistentData.PlayerData.AddClothesTorsSkin(item.SkinType);
+
+        foreach (var item in _initialInventoryData.ClosthesHeadSkinItems)
+            _persistentData.PlayerData.AddClothesHeadSkin(item.SkinType);
+
+        _persistentData.PlayerData.IsStartDataLoaded = true;
+        _dataProvider.Save();
+    }
+
     private void OnItemViewDestroyed(InventoryItemView item)
     {
-        _skinRemover.Visit(item.Item);
+        _skinRemover.Visit(item.Item, item.Count);
 
         _dataProvider.Save();
     }
 
-    private List<ClothesTorsSkinItem> GetWeaponData()
+    private void LoadClothesTorsData()
     {
-        _weaponSkinItems.Clear();
-        _weaponSkinCount.Clear();
-
         foreach (ClothesTorsSkinItem item in _inventoryContent.ClothesTorsSkinItems)
         {
             if (_persistentData.PlayerData.InventoryClothesTorsSkins.ContainsKey(item.SkinType))
             {
-                _weaponSkinItems.Add(item);
-                _weaponSkinCount.Add(_persistentData.PlayerData.InventoryClothesTorsSkins[item.SkinType]);
+                _clothesTorsSkinItems.Add(item);
+                _clothesTorsSkinCount.Add(_persistentData.PlayerData.InventoryClothesTorsSkins[item.SkinType]);
             }
         }
-
-        return _weaponSkinItems;
     }
 
-    private List<ConsumableSkinItem> GetAmmoData()
+    private void LoadConsumableData()
     {
-        _ammoSkinItems.Clear();
-        _ammoSkinCount.Clear();
-
         foreach (ConsumableSkinItem item in _inventoryContent.ConsumableSkinItems)
         {
             if (_persistentData.PlayerData.InventoryConsumableSkins.ContainsKey(item.SkinType))
             {
-                _ammoSkinItems.Add(item);
-                _ammoSkinCount.Add(_persistentData.PlayerData.InventoryConsumableSkins[item.SkinType]);
+                _consumableSkinItems.Add(item);
+                _consumableSkinCount.Add(_persistentData.PlayerData.InventoryConsumableSkins[item.SkinType]);
             }
         }
-
-        return _ammoSkinItems;
     }
 
-    private List<ClothesHeadSkinItem> GetArmorData()
+    private void LoadClothesHeadData()
     {
-        _armorSkinItems.Clear();
-        _armorSkinCount.Clear();
+        _clothesHeadSkinItems.Clear();
+        _consumableSkinCount.Clear();
 
         foreach (ClothesHeadSkinItem item in _inventoryContent.ClothesHeadSkinItems)
         {
             if (_persistentData.PlayerData.InventoryClothesHeadSkins.ContainsKey(item.SkinType))
             {
-                _armorSkinItems.Add(item);
-                _armorSkinCount.Add(_persistentData.PlayerData.InventoryClothesHeadSkins[item.SkinType]);
+                _clothesHeadSkinItems.Add(item);
+                _clothesHeadSkinCount.Add(_persistentData.PlayerData.InventoryClothesHeadSkins[item.SkinType]);
             }
         }
 
-        return _armorSkinItems;
     }
 }

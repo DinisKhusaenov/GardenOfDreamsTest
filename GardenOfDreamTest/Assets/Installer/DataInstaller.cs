@@ -2,26 +2,18 @@ using Zenject;
 
 public class DataInstaller : MonoInstaller
 {
+
     private PersistentData _persistentData;
     private DataLocalProvider _dataProvider;
 
     public override void InstallBindings()
     {
-        BindPersistentData();
-        BindDataProvider();
-    }
-
-    private void BindDataProvider()
-    {
+        _persistentData = new PersistentData();
         _dataProvider = new DataLocalProvider(_persistentData);
         LoadDataOrInit();
-        Container.BindInterfacesAndSelfTo<DataLocalProvider>().FromInstance(_dataProvider).AsSingle();
-    }
 
-    private void BindPersistentData()
-    {
-        _persistentData = new PersistentData();
         Container.BindInterfacesAndSelfTo<PersistentData>().FromInstance(_persistentData).AsSingle();
+        Container.BindInterfacesAndSelfTo<DataLocalProvider>().FromInstance(_dataProvider).AsSingle();
     }
 
     private void LoadDataOrInit()

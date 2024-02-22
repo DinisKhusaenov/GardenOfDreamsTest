@@ -1,4 +1,4 @@
-public class SkinRemover : IInventoryItemVisitor
+public class SkinRemover
 {
     private IPersistentData _persistentData;
 
@@ -7,14 +7,14 @@ public class SkinRemover : IInventoryItemVisitor
         _persistentData = persistentData;
     }
 
-    public void Visit(InventoryItem inventoryItem) => Visit((dynamic) inventoryItem);
+    public void Visit(InventoryItem inventoryItem, int count) => Visit((dynamic) inventoryItem, count);
 
-    public void Visit(ClothesHeadSkinItem armorSkinItem)
-        => _persistentData.PlayerData.RemoveClothesHeadSkin(armorSkinItem.SkinType);
+    public void Visit(ClothesHeadSkinItem armorSkinItem, int count)
+        => _persistentData.PlayerData.RemoveClothesHeadSkin(armorSkinItem.SkinType, count);
 
-    public void Visit(ConsumableSkinItem ammoSkinItem)
-        => _persistentData.PlayerData.RemoveConsumableSkin(ammoSkinItem.SkinType);
+    public void Visit(ConsumableSkinItem ammoSkinItem, int count)
+        => _persistentData.PlayerData.RemoveConsumableSkin(ammoSkinItem.SkinType, count);
 
-    public void Visit(ClothesTorsSkinItem weaponSkinItem)
-        => _persistentData.PlayerData.RemoveClothesTorsSkin(weaponSkinItem.SkinType);
+    public void Visit(ClothesTorsSkinItem weaponSkinItem, int count)
+        => _persistentData.PlayerData.RemoveClothesTorsSkin(weaponSkinItem.SkinType, count);
 }

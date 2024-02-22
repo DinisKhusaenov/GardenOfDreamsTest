@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -6,6 +7,8 @@ using Zenject;
 
 public class PopUp : MonoBehaviour
 {
+    public event Action<InventoryItemView, Cell> UseClicked;
+
     [SerializeField] private TMP_Text _name;
     [SerializeField] private Image _item;
     [SerializeField] private TMP_Text _weight;
@@ -17,10 +20,14 @@ public class PopUp : MonoBehaviour
     private List<Cell> _cells;
     private PopUpInitializer _popUpInitializer;
 
+    private InventoryItemView _currentItem;
+    private Cell _currentCell;
+
     [Inject]
     private void Construct(List<Cell> cells)
     {
         _cells = cells;
+        _popUpInitializer = new PopUpInitializer(this);
     }
 
     public void Initialize(string heal, string protect, string useButtonText)
@@ -48,12 +55,18 @@ public class PopUp : MonoBehaviour
     {
         foreach (var cell in _cells)
             cell.Click += OnCellClicked;
+
+        _use.onClick.AddListener(OnUseClicked);
+        _delete.onClick.AddListener(OnDeleteClicked);
     }
 
     private void OnDisable()
     {
         foreach (var cell in _cells)
             cell.Click -= OnCellClicked;
+
+        _use.onClick.RemoveListener(OnUseClicked);
+        _delete.onClick.RemoveListener(OnDeleteClicked);
     }
 
     public void Show() => gameObject.SetActive(true);
@@ -65,14 +78,29 @@ public class PopUp : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    private void OnCellClicked(InventoryItemView view)
+    private void OnUseClicked()
+    {
+        UseClicked?.Invoke(_currentItem, _currentCell);
+        Hide();
+    }
+
+    private void OnDeleteClicked()
+    {
+        _currentItem.Delete();
+        _currentCell.Clear();
+        Hide();
+    }
+
+    private void OnCellClicked(InventoryItemView view, Cell cell)
     {
         _name.text = view.Item.Name;
         _item.sprite = view.Item.Image;
         _weight.text = view.Item.Weight + " кг";
 
-        _popUpInitializer = new PopUpInitializer(view.Item, this);
         _popUpInitializer.Visit(view.Item);
+
+        _currentItem = view;
+        _currentCell = cell;
     }
 
     private class PopUpInitializer : IInventoryItemVisitor
@@ -81,16 +109,14 @@ public class PopUp : MonoBehaviour
         private const string Heal = "Ћечить";
         private const string Equip = "Ёкипировать";
 
-        private InventoryItem _inventoryItem;
         private PopUp _popUp;
 
-        public PopUpInitializer(InventoryItem inventoryItem, PopUp popUp)
+        public PopUpInitializer(PopUp popUp)
         {
-            _inventoryItem = inventoryItem;
             _popUp = popUp;
         }
 
-        public void Visit(InventoryItem inventoryItem) => Visit((dynamic)_inventoryItem);
+        public void Visit(InventoryItem inventoryItem) => Visit((dynamic)inventoryItem);
 
         public void Visit(ClothesHeadSkinItem clothesHeadSkinItem)
             => _popUp.Initialize("", clothesHeadSkinItem.HeadProtection.ToString(), Equip);
