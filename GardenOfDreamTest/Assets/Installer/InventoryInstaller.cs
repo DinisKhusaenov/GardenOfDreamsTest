@@ -19,6 +19,7 @@ public class InventoryInstaller : MonoInstaller
         BindItemFactory();
         BindCells();
         BindInventoryContent();
+        BindSkinSaver();
     }
 
     private void BindInventoryContent()
@@ -44,6 +45,11 @@ public class InventoryInstaller : MonoInstaller
     private void BindSkinRemover()
     {
         Container.BindInterfacesAndSelfTo<SkinRemover>().AsSingle();
+    }
+
+    private void BindSkinSaver()
+    {
+        Container.BindInterfacesAndSelfTo<SkinSaver>().AsSingle();
     }
 
     private void BindPopUp()

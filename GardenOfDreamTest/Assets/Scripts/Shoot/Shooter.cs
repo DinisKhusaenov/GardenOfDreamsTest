@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -10,11 +11,13 @@ public class Shooter : MonoBehaviour
     [SerializeField] private Button _shoot;
     [SerializeField] private Button _machineGun;
     [SerializeField] private Button _pistol;
+    [SerializeField] private Color _selectedColor;
 
     private Weapon _weapon;
     private Player _player;
     private Enemy _enemy;
     private PopUp _popUp;
+    private IPersistentData _persistentData;
 
     private int _machineGunPatrons;
     private int _pistolPatrons;
@@ -22,22 +25,21 @@ public class Shooter : MonoBehaviour
     private ConsumeOfConsumables _consumeOfConsumables;
 
     [Inject]
-    private void Construct(PopUp popUp)
+    private void Construct(PopUp popUp, IPersistentData persistentData)
     {
         _popUp = popUp;
+        _persistentData = persistentData;
 
         _popUp.UseClicked += OnUseClicked;
+
+        UseMachineGun();
+        ChangePatronsCountText();
     }
 
     public void Initialize(Player player, Enemy enemy)
     {
         _player = player;
         _enemy = enemy;
-    }
-
-    private void Awake()
-    {
-        UseMachineGun();
     }
 
     private void OnEnable()
@@ -63,6 +65,9 @@ public class Shooter : MonoBehaviour
 
         _weapon = new MachineGun(_machineGunPatrons);
 
+        _machineGun.image.color = _selectedColor;
+        _pistol.image.color = Color.white;
+
         _weapon.Shooted += SpendMachineGunAmmo;
     }
 
@@ -73,7 +78,16 @@ public class Shooter : MonoBehaviour
 
         _weapon = new Pistol(_pistolPatrons);
 
+        _pistol.image.color = _selectedColor;
+        _machineGun.image.color = Color.white;
+
         _weapon.Shooted += SpendPistolAmmo;
+    }
+
+    private void ChangePatronsCountText()
+    {
+        _machineGun.GetComponentInChildren<TMP_Text>().text = _machineGunPatrons.ToString();
+        _pistol.GetComponentInChildren<TMP_Text>().text = _pistolPatrons.ToString();
     }
 
     private void Shoot()
@@ -93,6 +107,8 @@ public class Shooter : MonoBehaviour
         if (_machineGunPatrons < 0)
             _machineGunPatrons = 0;
 
+        ChangePatronsCountText();
+
         _player.Reduce(PlayerDamage);
         _enemy.Reduce(damage);
     }
@@ -109,13 +125,15 @@ public class Shooter : MonoBehaviour
         if (_pistolPatrons < 0)
             _pistolPatrons = 0;
 
+        ChangePatronsCountText();
+
         _player.Reduce(PlayerDamage);
         _enemy.Reduce(damage);
     }
 
     private void OnUseClicked(InventoryItemView view, Cell cell)
     {
-        _consumeOfConsumables = new ConsumeOfConsumables(this, view, cell);
+        _consumeOfConsumables = new ConsumeOfConsumables(this, view, cell, _persistentData);
 
         _consumeOfConsumables.Visit(view.Item);
     }
@@ -125,12 +143,14 @@ public class Shooter : MonoBehaviour
         private Shooter _shooter;
         private InventoryItemView _view;
         private Cell _cell;
+        private IPersistentData _persistentData;
 
-        public ConsumeOfConsumables(Shooter shooter, InventoryItemView view, Cell cell)
+        public ConsumeOfConsumables(Shooter shooter, InventoryItemView view, Cell cell, IPersistentData persistentData)
         {
             _shooter = shooter;
             _view = view;
             _cell = cell;
+            _persistentData = persistentData;
         }
 
         public void Visit(InventoryItem inventoryItem) => Visit((dynamic)inventoryItem);
@@ -141,6 +161,8 @@ public class Shooter : MonoBehaviour
             {
                 _shooter._player.Add(consumableSkinItem.HealAmount);
                 _view.SpendQuantity();
+                _persistentData.PlayerData.RemoveConsumableSkin(consumableSkinItem.SkinType, 1);
+
                 if (_view == null)
                     _cell.Clear();
             }
@@ -149,12 +171,14 @@ public class Shooter : MonoBehaviour
                 _shooter._machineGunPatrons = _view.Count;
                 _view.Delete();
                 _cell.Clear();
+                _shooter.ChangePatronsCountText();
             }
             else
             {
                 _shooter._pistolPatrons = _view.Count;
                 _view.Delete();
                 _cell.Clear();
+                _shooter.ChangePatronsCountText();
             }
         }
 

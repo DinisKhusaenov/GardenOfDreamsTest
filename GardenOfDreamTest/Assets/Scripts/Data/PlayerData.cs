@@ -47,16 +47,16 @@ public class PlayerData
         }
     }
 
-    public void AddConsumableSkin(ConsumableTypes consumableSkin)
+    public void AddConsumableSkin(ConsumableTypes consumableSkin, int amount)
     {
         if (_inventoryConsumableSkins.ContainsKey(consumableSkin))
         {
             var count = _inventoryConsumableSkins[consumableSkin];
-            _inventoryConsumableSkins[consumableSkin] = count + 1;
+            _inventoryConsumableSkins[consumableSkin] = count + amount;
         }
         else
         {
-            _inventoryConsumableSkins.Add(consumableSkin, 1);
+            _inventoryConsumableSkins.Add(consumableSkin, amount);
         }
     }
 

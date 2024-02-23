@@ -13,9 +13,14 @@ public class MachineGun : Weapon
 
     public override void Shoot()
     {
-        if (PatronsCount > BulletsPerShot)
+        if (PatronsCount >= BulletsPerShot)
+        {
             Shooted?.Invoke(BulletsPerShot, Damage);
+            PatronsCount -= BulletsPerShot;
+        }
         else
+        {
             OnAmmoIsOut();
+        }
     }
 }

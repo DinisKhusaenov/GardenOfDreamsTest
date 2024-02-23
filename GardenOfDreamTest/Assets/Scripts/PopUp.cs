@@ -16,6 +16,7 @@ public class PopUp : MonoBehaviour
     [SerializeField] private TMP_Text _heal;
     [SerializeField] private Button _delete;
     [SerializeField] private Button _use;
+    [SerializeField] private Button _anticlicker;
 
     private List<Cell> _cells;
     private PopUpInitializer _popUpInitializer;
@@ -58,6 +59,7 @@ public class PopUp : MonoBehaviour
 
         _use.onClick.AddListener(OnUseClicked);
         _delete.onClick.AddListener(OnDeleteClicked);
+        _anticlicker.onClick.AddListener(Hide);
     }
 
     private void OnDisable()
@@ -67,6 +69,7 @@ public class PopUp : MonoBehaviour
 
         _use.onClick.RemoveListener(OnUseClicked);
         _delete.onClick.RemoveListener(OnDeleteClicked);
+        _anticlicker.onClick.RemoveListener(Hide);
     }
 
     public void Show() => gameObject.SetActive(true);

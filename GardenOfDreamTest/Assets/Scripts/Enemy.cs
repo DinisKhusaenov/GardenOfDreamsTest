@@ -23,7 +23,7 @@ public class Enemy: IHealth
 
         _currentHealth -= value;
 
-        if (_currentHealth < 0)
+        if (_currentHealth <= 0)
         {
             _currentHealth = 0;
             Died?.Invoke();

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using Zenject;
 
@@ -22,16 +23,18 @@ public class Inventory : MonoBehaviour
     private IPersistentData _persistentData;
 
     private SkinRemover _skinRemover;
+    private SkinSaver _skinSaver;
 
     [Inject]
     private void Construct(IDataProvider dataProvider, IPersistentData persistentData, SkinRemover skinRemover, 
-        InitialInventoryData initialInventoryData, InventoryContent inventoryContent)
+        InitialInventoryData initialInventoryData, InventoryContent inventoryContent, SkinSaver skinSaver)
     {
         _dataProvider = dataProvider;
         _persistentData = persistentData;
         _skinRemover = skinRemover;
         _initialInventoryData = initialInventoryData;
         _inventoryContent = inventoryContent;
+        _skinSaver = skinSaver;
 
         _clothesTorsSkinCount = new List<int>();
         _consumableSkinCount = new List<int>();
@@ -65,6 +68,23 @@ public class Inventory : MonoBehaviour
     private void OnDisable()
     {
         _skinsPanel.ItemViewDestroyed -= OnItemViewDestroyed;
+
+        _dataProvider.Save();
+    }
+
+    public void AddRandomItem()
+    {
+        List<InventoryItem> allItems = new List<InventoryItem>();
+        allItems.AddRange(_inventoryContent.ClothesHeadSkinItems);
+        allItems.AddRange(_inventoryContent.ClothesTorsSkinItems);
+        allItems.AddRange(_inventoryContent.ConsumableSkinItems);
+
+        var randomItem = allItems[Random.Range(0, allItems.Count)];
+        IEnumerable<InventoryItem> item = new List<InventoryItem>() {randomItem};
+        _skinsPanel.Show(item, new List<int>() { randomItem.MaxCount});
+
+        _skinSaver.Visit(randomItem);
+        _dataProvider.Save();
     }
 
     private void LoadStartData()
@@ -73,8 +93,11 @@ public class Inventory : MonoBehaviour
         _skinsPanel.Show(_initialInventoryData.ClothesTorsSkinItems, _initialInventoryData.ClothesTorsSkinItemsCount.ToList());
         _skinsPanel.Show(_initialInventoryData.ConsumableSkinItems, _initialInventoryData.ConsumableSkinItemsCount.ToList());
 
-        foreach (var item in _initialInventoryData.ConsumableSkinItems)
-            _persistentData.PlayerData.AddConsumableSkin(item.SkinType);
+        for (int i = 0; i < _initialInventoryData.ConsumableSkinItems.Count(); i++)
+        {
+            _persistentData.PlayerData.AddConsumableSkin(_initialInventoryData.ConsumableSkinItems.ElementAt(i).SkinType, 
+                _initialInventoryData.ConsumableSkinItemsCount.ElementAt(i));
+        }
 
         foreach (var item in _initialInventoryData.ClothesTorsSkinItems)
             _persistentData.PlayerData.AddClothesTorsSkin(item.SkinType);
@@ -130,6 +153,5 @@ public class Inventory : MonoBehaviour
                 _clothesHeadSkinCount.Add(_persistentData.PlayerData.InventoryClothesHeadSkins[item.SkinType]);
             }
         }
-
     }
 }
