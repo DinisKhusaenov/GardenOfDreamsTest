@@ -113,7 +113,7 @@ public class SkinsPanel : MonoBehaviour
                 minEpmtyDistance = distance;
                 closestEmptyCell = cell;
             }
-            if (distance < minEpmtyDistance && cell.IsOccupied)
+            if (distance < minOccupiedDistance && cell.IsOccupied)
             {
                 minOccupiedDistance = distance;
                 closestOccupiedCell = cell;
